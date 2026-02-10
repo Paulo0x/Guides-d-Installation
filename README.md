@@ -11,25 +11,6 @@ Ce dépôt a pour but de centraliser, structurer et partager mes procédures d'i
 
 ---
 
-## 🗂️ Sommaire des Guides
-
-### 🛡️ Sécurité & Hardening
-*Des guides pour renforcer la sécurité des serveurs et réseaux.*
-* [Installation et paramétrage de CrowdSec sur Debian](./Securite/crowdsec-debian.md) *(À venir)*
-* *Configuration Fail2Ban (À venir)*
-
-### 🐳 Virtualisation & Conteneurs
-*Déploiement d'applications via Docker et gestion de conteneurs.*
-* *Installation de Portainer (À venir)*
-* *Déploiement de stack LAMP sous Docker (À venir)*
-
-### 🐧 Administration Système Linux
-*Commandes utiles, scripts bash et gestion serveur.*
-* *Gestion des utilisateurs et permissions (À venir)*
-* *Partitionnement LVM (À venir)*
-
----
-
 ## 🛠️ Méthodologie
 
 Chaque guide présent dans ce dépôt suit une structure rigoureuse pour garantir la reproductibilité :
@@ -42,7 +23,6 @@ Chaque guide présent dans ce dépôt suit une structure rigoureuse pour garanti
 
 ## 👤 Auteur
 
-Maintenu par **[TON NOM OU PSEUDO ICI]**.
-Passionné par l'IT, l'Open Source et l'automatisation.
+Maintenu par **Paulo Rosa**.
 
 *N'hésitez pas à explorer le code ou à suggérer des améliorations !*
