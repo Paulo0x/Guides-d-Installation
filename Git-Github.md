@@ -1,148 +1,157 @@
-# 🛠️ Git : Commandes Utiles & Gestion Quotidienne
+# 🐙 Git & GitHub : Maîtrise Totale du Workflow
 
-Une fois les bases acquises, un Administrateur Système ou un Développeur doit savoir naviguer dans l'historique, créer des branches pour ne pas casser la production, et revenir en arrière en cas d'erreur. Ce guide recense les commandes indispensables pour survivre au quotidien.
+Git est l'outil standard de gestion de versions. Ce guide couvre le cycle complet : de l'installation à la publication d'un projet existant sur votre propre compte (migration), en passant par les commandes indispensables pour gérer les branches et réparer les erreurs au quotidien.
 
 ---
 
-## 1. Surveiller et Comprendre l'État
+## 1. Prérequis
 
-Avant de toucher à quoi que ce soit, il faut savoir où on est.
+* **Système** : Linux (Debian/Ubuntu), Windows (Git Bash) ou macOS.
+* **Compte** : Un compte GitHub actif.
+* **Authentification** : Une clé SSH configurée ou un Token d'accès personnel (PAT).
 
-### Étape 1.1 : L'historique compact
-La commande `git log` par défaut est trop verbeuse. Utilisez cette version pour avoir une vue d'ensemble propre (une ligne par commit) :
+---
+
+## 2. Installation
+
+Commençons par installer l'outil et définir votre identité numérique pour signer les commits.
+
+### Étape 2.1 : Installation des paquets
+
+Sur une distribution Debian/Ubuntu :
+
+```bash
+sudo apt update
+sudo apt install git -y
+```
+
+### Étape 2.2 : Configuration de l'identité
+
+Git doit savoir qui vous êtes. Ces informations apparaîtront dans l'historique des modifications.
+
+```bash
+# Définir votre nom et email
+git config --global user.name "Votre Pseudo GitHub"
+git config --global user.email "votre_email@exemple.com"
+
+# Définir 'main' comme branche par défaut (standard moderne)
+git config --global init.defaultBranch main
+```
+
+---
+
+## 3. Scénario : Cloner, Migrer et Publier
+
+C'est le cas d'usage fréquent : récupérer un projet ailleurs, casser le lien avec l'auteur original, et le publier sur **votre** GitHub.
+
+### Étape 3.1 : Récupération (Clone)
+
+Téléchargez le projet source sur votre machine :
+
+```bash
+git clone [https://github.com/auteur-original/projet-source.git](https://github.com/auteur-original/projet-source.git)
+cd projet-source
+```
+
+### Étape 3.2 : Changement d'Origine (Remote)
+
+Nous devons rediriger le projet vers un dépôt vide que vous avez créé sur votre GitHub.
+
+```bash
+# 1. Supprimer le lien avec l'auteur original
+git remote remove origin
+
+# 2. Ajouter le lien vers VOTRE nouveau dépôt vide
+# (Remplacez l'URL par la vôtre)
+git remote add origin [https://github.com/VOTRE_PSEUDO/mon-nouveau-projet.git](https://github.com/VOTRE_PSEUDO/mon-nouveau-projet.git)
+
+# 3. Vérifier que l'URL est bien la vôtre
+git remote -v
+```
+
+### Étape 3.3 : Envoi initial (Push)
+
+Envoyez tout le code sur votre compte :
+
+```bash
+# Lier la branche locale 'main' à votre version distante
+git push -u origin main
+```
+
+---
+
+## 4. Commandes Quotidiennes (Configuration Avancée)
+
+Une fois le projet en place, voici les commandes pour travailler proprement sans casser la production.
+
+### Étape 4.1 : Travailler avec des Branches
+
+Ne codez jamais directement sur `main`. Isolez chaque fonctionnalité.
+
+```bash
+# Créer une branche "login" et basculer dessus
+git checkout -b feature-login
+
+# ... (Vous faites vos modifications ici) ...
+
+# Revenir sur la branche principale
+git checkout main
+
+# Fusionner le travail de "login" dans "main"
+git merge feature-login
+```
+
+### Étape 4.2 : Le "Panic Button" (Réparations)
+
+Tout le monde fait des erreurs. Voici comment les corriger.
+
+```bash
+# Mettre le travail de côté temporairement (Stash) pour changer de branche en urgence
+git stash
+# Récupérer le travail plus tard
+git stash pop
+
+# Annuler les modifications d'un fichier (avant le 'add')
+git restore mon_fichier.txt
+
+# Modifier le dernier commit (oubli de fichier ou faute de frappe)
+git add fichier_oublie.txt
+git commit --amend -m "Message corrigé"
+```
+
+### Étape 4.3 : Ignorer des fichiers (.gitignore)
+
+Créez un fichier `.gitignore` à la racine pour éviter d'envoyer des fichiers sensibles ou inutiles.
+
+```text
+# Exemple de contenu .gitignore
+node_modules/
+*.log
+.env
+.DS_Store
+```
+
+---
+
+## 5. Vérification
+
+Assurons-nous que l'historique est propre et que le projet est bien synchronisé.
+
+### Étape 5.1 : Voir l'historique graphique
+
+Utilisez cette commande pour visualiser l'arbre des commits et les branches :
 
 ```bash
 git log --oneline --graph --decorate --all
 ```
-* **Résultat** : Vous verrez un arbre ASCII coloré montrant les branches et les fusions.
+* **Résultat** : Un arbre ASCII montrant l'évolution du projet.
 
-### Étape 1.2 : Voir les différences
-Pour voir exactement ce que vous avez modifié avant de faire un `add` :
-
-```bash
-git diff
-```
-* **Résultat** : Affiche les lignes supprimées en rouge (-) et les ajouts en vert (+).
-
----
-
-## 2. Travailler avec des Branches (Sécurité)
-
-Ne travaillez jamais directement sur `main` (ou `master`). Créez une branche pour chaque nouvelle fonctionnalité.
-
-### Étape 2.1 : Créer et changer de branche
-La commande moderne pour créer une branche et basculer dessus immédiatement :
+### Étape 5.2 : Statut du dépôt
 
 ```bash
-# Créer une branche nommée "feature-login" et basculer dessus
-git checkout -b feature-login
+git status
 ```
-
-### Étape 2.2 : Revenir sur la branche principale
-Une fois le travail fini, revenez à la base :
-
-```bash
-git checkout main
-```
-
-### Étape 2.3 : Supprimer une branche
-Une fois fusionnée, la branche ne sert plus à rien :
-
-```bash
-git branch -d feature-login
-```
-
----
-
-## 3. Mettre à Jour et Fusionner
-
-Le travail d'équipe implique de récupérer le code des autres et de l'intégrer au vôtre.
-
-### Étape 3.1 : Récupérer les dernières modifs (Pull)
-Avant de commencer à travailler, mettez toujours votre local à jour par rapport au serveur (GitHub) :
-
-```bash
-git pull origin main
-```
-
-### Étape 3.2 : Fusionner une branche (Merge)
-Vous êtes sur `main` et vous voulez récupérer le travail de `feature-login` :
-
-```bash
-git merge feature-login
-```
-*Note : S'il y a des conflits (deux personnes ont modifié la même ligne), Git vous demandera de les résoudre manuellement.*
-
----
-
-## 4. Le "Panic Button" (Annuler et Réparer)
-
-Tout le monde fait des erreurs. Voici comment les réparer.
-
-### Étape 4.1 : Annuler des modifications non validées
-Vous avez modifié un fichier et tout cassé, mais vous n'avez pas encore fait `git add`. Pour revenir à la version précédente :
-
-```bash
-# Remet le fichier fichier.txt comme il était au dernier commit
-git restore fichier.txt
-```
-
-### Étape 4.2 : Modifier le dernier commit (Oups !)
-Vous avez fait un commit mais vous avez oublié un fichier ou fait une faute de frappe dans le message ?
-
-```bash
-# Ajoutez le fichier oublié
-git add fichier_oublie.txt
-
-# Modifiez le commit précédent sans en créer un nouveau
-git commit --amend -m "Nouveau message corrigé"
-```
-
-### Étape 4.3 : Mettre de côté temporairement (Stash)
-Vous êtes en plein travail, c'est le bazar, mais vous devez changer de branche en urgence pour fixer un bug. Ne committez pas du code cassé !
-
-```bash
-# 1. Mettre le travail de côté (dans un presse-papier magique)
-git stash
-
-# 2. Faites vos autres tâches...
-
-# 3. Récupérer votre travail quand vous revenez
-git stash pop
-```
-
----
-
-## 5. Ignorer des Fichiers (.gitignore)
-
-C'est une erreur classique : envoyer des fichiers de configuration avec des mots de passe ou des fichiers temporaires (`.log`, `.tmp`, `node_modules`) sur GitHub.
-
-### Étape 5.1 : Créer la règle
-Créez un fichier nommé `.gitignore` à la racine du projet :
-
-```bash
-nano .gitignore
-```
-
-### Étape 5.2 : Exemple de contenu
-Ajoutez-y les fichiers ou dossiers à bannir :
-
-```text
-# Ignorer tous les fichiers logs
-*.log
-
-# Ignorer le dossier de dépendances
-node_modules/
-
-# Ignorer les fichiers systèmes Mac/Windows
-.DS_Store
-Thumbs.db
-
-# Ignorer les clés privées (CRITIQUE !)
-*.pem
-*.key
-.env
-```
+* **Succès** : Le message doit indiquer `On branch main` et `Your branch is up to date with 'origin/main'` (si vous avez tout poussé).
 
 ---
 *Guide réalisé par Paulo Rosa.*
