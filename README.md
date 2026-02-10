@@ -1,8 +1,5 @@
 # 📚 Guides d'Installation & Documentation Technique
 
-![Status](https://img.shields.io/badge/Status-Active-success)
-![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Docker%20%7C%20Network-blue)
-![Focus](https://img.shields.io/badge/Focus-SysAdmin%20%26%20DevOps-orange)
 
 Bienvenue sur ma **base de connaissances personnelle**.
 Ce dépôt a pour but de centraliser, structurer et partager mes procédures d'installation, mes configurations types et mes notes de dépannage pour l'administration système et réseau.
