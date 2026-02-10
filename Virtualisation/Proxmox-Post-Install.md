@@ -65,16 +65,17 @@ echo "deb [http://download.proxmox.com/debian/pve](http://download.proxmox.com/d
 
 # 3. Corriger le dépôt Ceph (Stockage distribué)
 echo "deb [http://download.proxmox.com/debian/ceph-quincy](http://download.proxmox.com/debian/ceph-quincy) bookworm no-subscription" > /etc/apt/sources.list.d/ceph.list
+
 Étape 3.2 : Mise à jour du Système
 Mettez à jour le cœur du système avec les nouveaux dépôts :
 
-Bash
 apt update && apt dist-upgrade -y
+
 Étape 3.3 : Suppression du message "No Subscription"
 Pour ne plus avoir la fenêtre d'avertissement à chaque connexion :
 
-Bash
 sed -Ezi.bak "s/(Ext.Msg.show\(\{\s+title: gettext\('No valid subscription'\),)/void\(\{ \/\/\1/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
+
 Redémarrez ensuite le serveur pour valider le nouveau noyau Linux : reboot
 
 4. Vérification
