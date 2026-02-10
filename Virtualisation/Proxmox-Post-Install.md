@@ -1,106 +1,116 @@
 # ☁️ Proxmox VE 8 : Installation & Configuration Initiale
 
-Proxmox Virtual Environment (PVE) est une plateforme de virtualisation complète. Ce guide couvre l'installation du système d'exploitation (Hyperviseur) depuis zéro, jusqu'à sa configuration pour un usage en production sans licence payante.
+Proxmox Virtual Environment (PVE) est une plateforme de virtualisation complète (Hyperviseur de Type 1). Ce guide couvre l'installation du système d'exploitation depuis zéro, ainsi que sa configuration post-installation pour un usage en production sans licence entreprise.
 
 ---
 
 ## 1. Prérequis
 
-Avant de commencer, assurez-vous d'avoir :
+Avant de lancer l'installation, assurez-vous de disposer des éléments suivants :
 
-* **Matériel** : Un serveur ou PC dédié (64-bit, support VT-x/AMD-v activé dans le BIOS).
+* **Matériel** : Un serveur ou un PC 64-bit avec la virtualisation (VT-x / AMD-v) activée dans le BIOS.
 * **Support d'installation** : Une clé USB (8 Go min) contenant l'ISO de Proxmox VE 8 (créée avec Rufus ou BalenaEtcher).
-* **Réseau** : Une connexion Internet par câble Ethernet (le Wi-Fi est fortement déconseillé pour un serveur).
-* **Infos Réseau** : Avoir choisi une IP fixe pour le serveur (ex: `192.168.1.10`) et connaître sa passerelle (Gateway).
+* **Réseau** : Le serveur doit être relié par câble Ethernet (le Wi-Fi est déconseillé pour un hyperviseur).
+* **Plan d'adressage** : Vous devez avoir défini une **IP Fixe** pour ce serveur (ex: `192.168.1.10`) et connaître l'adresse de votre passerelle/box (ex: `192.168.1.1`).
 
 ---
 
 ## 2. Installation
 
-Cette étape décrit le processus d'installation du système d'exploitation sur le disque dur.
+Cette étape décrit le processus d'installation du système d'exploitation sur le disque dur physique du serveur.
 
 ### Étape 2.1 : Démarrage
 1.  Insérez la clé USB et démarrez le serveur.
-2.  Accédez au menu de boot (F11, F12 ou Suppr selon la machine) et choisissez la clé USB (UEFI de préférence).
-3.  Dans le menu Proxmox, sélectionnez **"Install Proxmox VE (Graphical)"**.
+2.  Accédez au menu de boot (F11, F12 ou Suppr selon la machine) et choisissez la clé USB (mode UEFI recommandé).
+3.  Dans le menu de démarrage Proxmox, sélectionnez **"Install Proxmox VE (Graphical)"**.
 
-### Étape 2.2 : L'Assistant d'Installation (Pas à pas)
-Suivez les écrans de l'installateur :
+### Étape 2.2 : L'Assistant d'Installation
+Suivez les écrans de configuration :
 
 1.  **EULA** : Cliquez sur *I agree*.
 2.  **Target Harddisk** : Sélectionnez le disque de destination.
-    * *Conseil : Laissez les options par défaut (ext4) sauf si vous savez configurer du ZFS/RAID.*
+    * *Note : Laissez les options par défaut (ext4) sauf besoin spécifique (ZFS/RAID).*
 3.  **Country/Time Zone** :
     * Country : `France`
     * Time Zone : `Europe/Paris`
-    * Keyboard Layout : `French` (ou votre clavier).
+    * Keyboard Layout : `French` (ou selon votre clavier).
 4.  **Password & Email** :
-    * Définissez le mot de passe `root` (Admin). **Ne l'oubliez pas !**
-    * Entrez une adresse email valide (pour les alertes système).
+    * Définissez le mot de passe `root` (Administrateur système). **Ne l'oubliez pas !**
+    * Entrez une adresse email valide (pour recevoir les alertes critiques).
 5.  **Network Configuration** (CRITIQUE) :
-    * **Hostname** : Donnez un nom complet (ex: `pve1.mon-domaine.local`).
-    * **IP Address** : Mettez l'IP fixe choisie (ex: `192.168.1.10`).
+    * **Hostname** : Donnez un nom complet (ex: `pve.local` ou `srv-proxmox.domaine`).
+    * **IP Address** : Saisissez l'IP fixe choisie (ex: `192.168.1.10`).
     * **Gateway** : L'adresse de votre box/routeur (ex: `192.168.1.1`).
-    * **DNS Server** : `1.1.1.1` ou `8.8.8.8` (ou votre box).
-6.  **Summary** : Vérifiez tout et cliquez sur **Install**.
+    * **DNS Server** : `1.1.1.1` ou l'IP de votre box.
+6.  **Summary** : Vérifiez les informations et cliquez sur **Install**.
 
-Une fois l'installation finie, retirez la clé USB et le serveur redémarrera.
+Une fois l'installation terminée, retirez la clé USB et laissez le serveur redémarrer.
 
 ---
 
 ## 3. Configuration
 
-Maintenant que le système est installé, nous devons le configurer pour qu'il fonctionne sans licence entreprise. Connectez-vous en SSH ou utilisez la "Shell" via l'interface web (`https://IP-DE-VOTRE-SERVEUR:8006`).
+Par défaut, Proxmox est configuré pour les clients payants (Entreprise). Nous devons modifier cela pour permettre les mises à jour et nettoyer l'interface.
+
+Toutes ces commandes se font via la **Console** (soit en branchant un écran/clavier sur le serveur, soit via l'interface web > Node > Shell).
 
 ### Étape 3.1 : Configuration des Dépôts (Repositories)
-Par défaut, les mises à jour sont bloquées sans licence. On bascule sur les dépôts communautaires.
+Nous allons désactiver le dépôt payant et activer le dépôt communautaire gratuit.
 
-Exécutez ces commandes une par une :
+Copiez et exécutez ces commandes :
 
-# 1. Désactiver le dépôt Entreprise (qui cause des erreurs)
+```bash
+# 1. Désactiver le dépôt Entreprise (qui cause des erreurs 401)
 sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
 
-# 2. Ajouter le dépôt "No-Subscription" (Gratuit)
+# 2. Ajouter le dépôt "No-Subscription" (Gratuit et Stable)
 echo "deb [http://download.proxmox.com/debian/pve](http://download.proxmox.com/debian/pve) bookworm pve-no-subscription" >> /etc/apt/sources.list
 
-# 3. Corriger le dépôt Ceph (Stockage distribué)
+# 3. Corriger le dépôt Ceph (Stockage) pour éviter les erreurs futures
 echo "deb [http://download.proxmox.com/debian/ceph-quincy](http://download.proxmox.com/debian/ceph-quincy) bookworm no-subscription" > /etc/apt/sources.list.d/ceph.list
+```
 
-Étape 3.2 : Mise à jour du Système
-Mettez à jour le cœur du système avec les nouveaux dépôts :
+### Étape 3.2 : Mise à jour du Système
+Maintenant que les sources sont bonnes, mettez à jour le cœur du système :
 
+```bash
 apt update && apt dist-upgrade -y
+```
 
-Étape 3.3 : Suppression du message "No Subscription"
-Pour ne plus avoir la fenêtre d'avertissement à chaque connexion :
+### Étape 3.3 : Suppression de la bannière "No Subscription"
+Pour supprimer le message d'avertissement qui apparaît à chaque connexion :
 
+```bash
 sed -Ezi.bak "s/(Ext.Msg.show\(\{\s+title: gettext\('No valid subscription'\),)/void\(\{ \/\/\1/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
+```
 
-Redémarrez ensuite le serveur pour valider le nouveau noyau Linux : reboot
+*Redémarrez le serveur une dernière fois pour appliquer le nouveau noyau Linux :* `reboot`
 
-4. Vérification
-Assurons-nous que votre hyperviseur est prêt pour la production.
+---
 
-Étape 4.1 : Accès à l'interface
-Depuis votre PC, ouvrez un navigateur et allez sur : https://IP-DE-VOTRE-SERVEUR:8006
+## 4. Vérification
 
-Acceptez l'avertissement de sécurité SSL.
+La dernière étape consiste à valider que l'hyperviseur est opérationnel et prêt à héberger des machines virtuelles.
 
-Connectez-vous avec l'utilisateur root et votre mot de passe.
+### Étape 4.1 : Accès à l'interface Web
+Depuis un autre ordinateur du réseau, ouvrez un navigateur et accédez à :
+`https://IP-DE-VOTRE-SERVEUR:8006`
 
-Succès : Si vous arrivez sur le tableau de bord avec les graphiques de RAM/CPU.
+* Acceptez l'avertissement de sécurité SSL (C'est normal, le certificat est auto-signé).
+* Connectez-vous avec l'utilisateur `root` et votre mot de passe.
+* **Résultat attendu** : Vous accédez au tableau de bord (Datacenter) et voyez les graphiques de performance (CPU/RAM).
 
-Étape 4.2 : Test fonctionnel (Télécharger une ISO)
-Vérifions que le réseau et le stockage fonctionnent en téléchargeant une image d'installation.
+### Étape 4.2 : Test de téléchargement (ISO)
+Vérifions que le serveur accède bien à Internet pour télécharger des images disques.
 
-Dans le menu de gauche, cliquez sur local (pve) > ISO Images.
+1.  Dans le menu de gauche, déroulez votre nœud et cliquez sur **local (pve)**.
+2.  Allez dans la section **ISO Images**.
+3.  Cliquez sur le bouton **Download from URL**.
+4.  Entrez l'URL d'une image test (ex: Debian Netinst) :
+    `https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.5.0-amd64-netinst.iso`
+5.  Cliquez sur **Query URL** (le nom du fichier doit apparaître) puis sur **Download**.
 
-Cliquez sur Download from URL.
+**Succès** : Si la barre de progression se termine par "TASK OK", votre serveur Proxmox est parfaitement installé, à jour et connecté.
 
-Entrez l'URL d'une petite distribution (ex: Alpine Linux) : https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/x86_64/alpine-virt-3.19.1-x86_64.iso
-
-Cliquez sur Query URL puis Download.
-
-Succès : Si la barre de progression va jusqu'à "TASK OK", votre serveur est opérationnel.
-
-Guide réalisé par Paulo Rosa.
+---
+*Guide réalisé par Paulo Rosa.*
